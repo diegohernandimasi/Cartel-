@@ -112,22 +112,28 @@ export default function App() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4 font-sans">
+      <div 
+        className="min-h-screen bg-cover bg-center flex items-center justify-center p-4 font-sans relative"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=1920')" }}
+      >
+        {/* Overlay for better contrast */}
+        <div className="absolute inset-0 bg-black/20" />
+
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-8 rounded-[24px] shadow-sm w-full max-w-md border border-gray-100"
+          className="bg-white/10 backdrop-blur-xl p-8 rounded-[32px] shadow-2xl w-full max-w-md border border-white/30 relative z-10"
         >
           <div className="flex justify-center mb-6">
-            <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/30">
               <User size={24} />
             </div>
           </div>
           
-          <h1 className="text-2xl font-semibold text-center mb-2 text-gray-900">
+          <h1 className="text-2xl font-semibold text-center mb-2 text-white drop-shadow-md">
             {mode === "register" ? "Crear Cuenta" : "Bienvenido"}
           </h1>
-          <p className="text-sm text-gray-500 text-center mb-8">
+          <p className="text-sm text-white/70 text-center mb-8">
             {mode === "register" 
               ? "Regístrate para acceder a la aplicación" 
               : "Ingresa tus credenciales para continuar"}
@@ -135,16 +141,16 @@ export default function App() {
 
           <form onSubmit={handleAuth} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1 ml-1">
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1 ml-1">
                 Usuario
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={18} />
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-white focus:border-transparent transition-all outline-none text-white placeholder:text-white/30"
                   placeholder="Tu nombre de usuario"
                   required
                 />
@@ -152,17 +158,17 @@ export default function App() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1 ml-1">
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1 ml-1">
                 Clave (4 números)
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={18} />
                 <input
                   type="password"
                   maxLength={4}
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-white focus:border-transparent transition-all outline-none text-white placeholder:text-white/30"
                   placeholder="••••"
                   required
                 />
@@ -175,7 +181,7 @@ export default function App() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 text-red-500 text-sm bg-red-50 p-3 rounded-lg"
+                  className="flex items-center gap-2 text-red-200 text-sm bg-red-500/20 backdrop-blur-sm p-3 rounded-lg border border-red-500/30"
                 >
                   <AlertCircle size={16} />
                   <span>{error}</span>
@@ -186,7 +192,7 @@ export default function App() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg"
+                  className="flex items-center gap-2 text-green-200 text-sm bg-green-500/20 backdrop-blur-sm p-3 rounded-lg border border-green-500/30"
                 >
                   <CheckCircle2 size={16} />
                   <span>{success}</span>
@@ -197,13 +203,13 @@ export default function App() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full bg-black text-white py-3 rounded-xl font-medium transition-colors active:scale-[0.98] transform flex items-center justify-center gap-2 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-gray-800'}`}
+              className={`w-full bg-white text-black py-3 rounded-xl font-semibold transition-all active:scale-[0.98] transform flex items-center justify-center gap-2 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-gray-100 hover:shadow-lg'}`}
             >
               {isLoading && (
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                  className="w-4 h-4 border-2 border-black border-t-transparent rounded-full"
                 />
               )}
               {mode === "register" ? "Registrarse" : "Iniciar Sesión"}
@@ -217,7 +223,7 @@ export default function App() {
                 setError("");
                 setSuccess("");
               }}
-              className="text-sm text-gray-500 hover:text-black transition-colors"
+              className="text-sm text-white/60 hover:text-white transition-colors"
             >
               {mode === "register" 
                 ? "¿Ya tienes cuenta? Inicia sesión" 
@@ -230,18 +236,24 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
+    <div 
+      className="min-h-screen bg-cover bg-center flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden"
+      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=1920')" }}
+    >
+      {/* Overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/30" />
+
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
+      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center max-w-7xl mx-auto w-full z-20">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white">
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-black">
             <MessageSquare size={16} />
           </div>
-          <span className="font-semibold text-gray-900">Hola Mundo App</span>
+          <span className="font-semibold text-white drop-shadow-md">Hola Mundo App</span>
         </div>
         <button 
           onClick={handleLogout}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition-colors px-4 py-2 rounded-full hover:bg-red-50"
+          className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20"
         >
           <LogOut size={16} />
           <span>Salir</span>
@@ -252,10 +264,10 @@ export default function App() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center"
+        className="text-center relative z-10"
       >
-        <h2 className="text-3xl font-light text-gray-400 mb-8">
-          Hola, <span className="font-semibold text-gray-900">{currentUser?.username}</span>
+        <h2 className="text-3xl font-light text-white/70 mb-8 drop-shadow-lg">
+          Hola, <span className="font-semibold text-white">{currentUser?.username}</span>
         </h2>
         
         <button
@@ -264,14 +276,14 @@ export default function App() {
           className={`
             group relative px-12 py-6 rounded-full font-semibold text-xl transition-all duration-300
             ${showHello 
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
-              : "bg-black text-white hover:bg-gray-800 hover:shadow-xl active:scale-95 shadow-lg"}
+              ? "bg-white/20 text-white/40 cursor-not-allowed backdrop-blur-sm" 
+              : "bg-white text-black hover:bg-gray-100 hover:shadow-2xl active:scale-95 shadow-xl"}
           `}
         >
           <span className="relative z-10">Presionar para el saludo</span>
           {!showHello && (
             <motion.div 
-              className="absolute inset-0 bg-white/10 rounded-full"
+              className="absolute inset-0 bg-black/5 rounded-full"
               initial={{ scale: 0, opacity: 0 }}
               whileHover={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3 }}
