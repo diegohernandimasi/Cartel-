@@ -1,0 +1,5 @@
+{
+  "name": "Hola Mundo App",
+  "description": "Una aplicación simple con registro de usuario y un botón que muestra un mensaje temporal.",
+  "requestFramePermissions": []
+}
