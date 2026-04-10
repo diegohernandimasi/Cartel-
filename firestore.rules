@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidUser(data) {
+      return data.username is string && data.username.size() >= 3 && data.username.size() <= 20 &&
+             data.pin is string && data.pin.matches('^[0-9]{4}$');
+    }
+
+    match /users/{username} {
+      // Allow creation if the username is unique and data is valid
+      // Note: In this simple app, we use username as ID for uniqueness
+      allow create: if isValidUser(request.resource.data) && request.resource.data.username == username;
+      
+      // Allow reading for login purposes
+      // In a real app, we'd use Firebase Auth, but here we're doing a simple custom check
+      allow get: if true;
+    }
+  }
+}

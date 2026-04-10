@@ -6,6 +6,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { User, Lock, LogOut, MessageSquare, CheckCircle2, AlertCircle } from "lucide-react";
+import { db } from "./firebase";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 type AuthMode = "login" | "register";
 
@@ -16,7 +18,6 @@ interface UserData {
 
 export default function App() {
   const [mode, setMode] = useState<AuthMode>("register");
-  const [allUsers, setAllUsers] = useState<UserData[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserData | null>(null);
   
@@ -25,66 +26,73 @@ export default function App() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Feature states
   const [showHello, setShowHello] = useState(false);
 
-  // Load users from localStorage on mount
+  // Check for session in localStorage (just for convenience, real data is in Firestore)
   useEffect(() => {
-    const savedUsers = localStorage.getItem("app_users");
-    if (savedUsers) {
-      const parsedUsers = JSON.parse(savedUsers);
-      setAllUsers(parsedUsers);
-      if (parsedUsers.length > 0) {
-        setMode("login");
-      }
+    const savedUser = localStorage.getItem("current_session_user");
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
+      setIsLoggedIn(true);
     }
   }, []);
 
-  const handleAuth = (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setIsLoading(true);
 
-    if (username.trim().length < 3) {
+    const cleanUsername = username.trim().toLowerCase();
+
+    if (cleanUsername.length < 3) {
       setError("El usuario debe tener al menos 3 caracteres.");
+      setIsLoading(false);
       return;
     }
 
     if (!/^\d{4}$/.test(pin)) {
       setError("La clave debe ser de exactamente 4 números.");
+      setIsLoading(false);
       return;
     }
 
-    if (mode === "register") {
-      const userExists = allUsers.some(
-        (u) => u.username.toLowerCase() === username.toLowerCase()
-      );
+    try {
+      const userRef = doc(db, "users", cleanUsername);
+      const userSnap = await getDoc(userRef);
 
-      if (userExists) {
-        setError("Este nombre de usuario ya está registrado.");
-        return;
-      }
-
-      const newUser = { username, pin };
-      const updatedUsers = [...allUsers, newUser];
-      setAllUsers(updatedUsers);
-      localStorage.setItem("app_users", JSON.stringify(updatedUsers));
-      
-      setSuccess("¡Registro exitoso! Ahora puedes iniciar sesión.");
-      setMode("login");
-      setPin("");
-    } else {
-      const foundUser = allUsers.find(
-        (u) => u.username.toLowerCase() === username.toLowerCase()
-      );
-
-      if (foundUser && foundUser.pin === pin) {
-        setCurrentUser(foundUser);
-        setIsLoggedIn(true);
+      if (mode === "register") {
+        if (userSnap.exists()) {
+          setError("Este nombre de usuario ya está registrado.");
+        } else {
+          const newUser = { 
+            username: cleanUsername, 
+            pin,
+            createdAt: serverTimestamp()
+          };
+          await setDoc(userRef, newUser);
+          setSuccess("¡Registro exitoso! Ahora puedes iniciar sesión.");
+          setMode("login");
+          setPin("");
+        }
       } else {
-        setError("Usuario o clave incorrectos.");
+        if (userSnap.exists() && userSnap.data().pin === pin) {
+          const userData = { username: userSnap.data().username, pin: userSnap.data().pin };
+          setCurrentUser(userData);
+          setIsLoggedIn(true);
+          localStorage.setItem("current_session_user", JSON.stringify(userData));
+        } else {
+          setError("Usuario o clave incorrectos.");
+        }
       }
+    } catch (err) {
+      console.error("Auth Error:", err);
+      setError("Ocurrió un error al conectar con la base de datos.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,6 +100,7 @@ export default function App() {
     setIsLoggedIn(false);
     setPin("");
     setShowHello(false);
+    localStorage.removeItem("current_session_user");
   };
 
   const triggerHello = () => {
@@ -187,8 +196,16 @@ export default function App() {
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors active:scale-[0.98] transform"
+              disabled={isLoading}
+              className={`w-full bg-black text-white py-3 rounded-xl font-medium transition-colors active:scale-[0.98] transform flex items-center justify-center gap-2 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-gray-800'}`}
             >
+              {isLoading && (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                />
+              )}
               {mode === "register" ? "Registrarse" : "Iniciar Sesión"}
             </button>
           </form>
